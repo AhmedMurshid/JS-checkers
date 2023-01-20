@@ -1,0 +1,11 @@
+#myCanvas{
+    border: 10px solid black;
+    position: absolute;
+    align-items: center;
+    left: 30%;
+    top: 1%;
+}
+h1{
+    text-align: left;
+    /* position: relative; */
+}
