@@ -1,67 +1,17 @@
 
 const app = new PIXI.Application({
-  width: 800,
-  height: 800,
+  width: 900,
+  height: 900,
 });
 document.body.appendChild(app.view);
 
 const gameState = [];
 let selectedChecker = null;
-const tileSize = 100;
+const tileSize = 110;
 const circleSize = tileSize/2;
+let alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
-
-function onClick(event) {
-  const xIndex = Math.floor(event.data.global.x / tileSize);
-  const yIndex = Math.floor(event.data.global.y / tileSize);
-
-  setTimeout(() => {
-    if ((xIndex + yIndex) % 2 === 0) {
-      this.beginFill(0x43235f);
-      } else { 
-        this.beginFill(0x873f30);
-      }
-    this.drawCircle(circleSize, circleSize, circleSize);
-    this.endFill();
-  }, 500);
-	
-  this.beginFill(0xff0000);
-  this.drawCircle(circleSize, circleSize, circleSize);
-  this.endFill();
-  
-  if (gameState[xIndex][yIndex] !== null) {
-    selectedChecker = {x: xIndex, y: yIndex};
-    // setTimeout(() => {
-    //   if ((xIndex + yIndex) % 2 === 0) {
-    //     this.beginFill(0x43235f);
-    //   } else { 
-    //     this.beginFill(0x873f30);
-    //   }
-    //   this.drawRect(0, 0, tileSize, tileSize);
-    //   this.endFill();
-    // }, 4500);
-    
-    // this.beginFill(0x277500);
-    // this.drawRect(0, 0, tileSize, tileSize);
-    // this.endFill();
-    
-  }
-}
-function onMove(event){
-  if (selectedChecker === null) {
-    return;
-  }
-  const xIndex = Math.floor(event.data.global.x / tileSize);
-  const yIndex = Math.floor(event.data.global.y / tileSize);
-  if (Math.abs(selectedChecker.x - xIndex) === 1 && Math.abs(selectedChecker.y - yIndex) === 1) {
-    gameState[xIndex][yIndex] = gameState[selectedChecker.x][selectedChecker.y];
-    gameState[selectedChecker.x][selectedChecker.y] = null;
-    addChecker(xIndex, yIndex, gameState[xIndex][yIndex]);
-    app.stage.removeChild(app.stage.children[selectedChecker.y * 8 + selectedChecker.x + 16]);
-  }
-  selectedChecker = null;
-}
-
+let moved;
 function addChecker(x, y, color) {
   const checker = new PIXI.Graphics();
   checker.beginFill(color);
@@ -71,11 +21,38 @@ function addChecker(x, y, color) {
   checker.y = y * tileSize;
   checker.interactive = true;
   checker.buttonMode = true;
-  checker.on("mousedown", onClick);
-  checker.on("mouseup", onMove);
-
-
-  app.stage.addChild(checker);
+  checker.dragging = false;
+  // TODO:          mousedown
+  checker.on('mousedown', function (e) {
+    console.log('Picked up');
+    
+    checker.x = e.data.global.x- tileSize/2;
+    checker.y = e.data.global.y- tileSize/2;
+    checker.dragging = true;
+  });
+  // TODO:           mousemove
+  checker.on('mousemove', function (e) {
+    console.log('Dragging');
+    
+    if (checker.dragging) {
+      checker.x = e.data.global.x- tileSize/2;
+      checker.y = e.data.global.y- tileSize/2;
+      console.log(checker.x,checker.y);
+    
+    }else{
+      console.log("not dragging")
+    }
+  });
+  // todo           mouseup 
+  checker.on('mouseup', function (e) {
+    console.log('Moving');
+    
+    checker.x = e.data.global.x- tileSize/2;
+    checker.y = e.data.global.y- tileSize/2;
+    checker.dragging = false;
+  });
+   app.stage.addChild(checker);
+  
 }
 
 for (let i = 0; i < 8; i++) {
@@ -88,33 +65,36 @@ for (let i = 0; i < 8; i++) {
     }
     tile.drawRect(0, 0, tileSize, tileSize);
     tile.endFill();
-
-    // Position the tile on the checker board
     tile.x = i * tileSize;
     tile.y = j * tileSize;
 
-    // Make the tile interactive
-    tile.interactive = true;
-    tile.buttonMode = true;
-
-    // Add the onClick event listener
-
-    // Add the tile to the PixiJS application
     app.stage.addChild(tile);
 
   }
 }
-for (let i = 0; i < 8; i++) {
-  gameState[i] = [];
-  for (let j = 0; j < 8; j++) {
-    if ((i + j) % 2 === 0 && (j <= 2 || j >= 5)) {
-      gameState[i][j] = (j <= 2) ? 0x43235f : 0x873f30;
-      addChecker(i, j, gameState[i][j]);
-    } else {
-      gameState[i][j] = null;
+function addToBoard(){
+  for (let i = 0; i < 8; i++) {
+    gameState[i] = [];
+    for (let j = 0; j < 8; j++) {
+      if ((i + j) % 2 === 0 && (j <= 2 || j >= 5)) {
+        gameState[i][j] = (j <= 2) ? 0x43235f : 0x873f30;
+        addChecker(i, j, gameState[i][j]);
+      } else {
+        gameState[i][j] = null;
+      }
     }
   }
+  const newDiv = document.createElement("div");
+
+  const newContent = document.createTextNode("addToBoard");
+
+  newDiv.appendChild(newContent);
+
+  const currentDiv = document.getElementById("div1");
+  document.body.insertBefore(newDiv, currentDiv);
+
 }
+addToBoard();
 
 
 // addChecker(0,0,0xff0);
