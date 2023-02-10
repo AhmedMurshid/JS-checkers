@@ -10,8 +10,21 @@ let selectedChecker = null;
 const tileSize = 110;
 const circleSize = tileSize/2;
 let alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+const color1 = 0xff0000;
+const color2 = 0x00e5ff;
+const light = 0xfbff00;
 
 let moved;
+
+function validPos(x,y){
+  //if e.data.global.x - tileSize / 2 ==
+  x = x+1 || x-1;
+
+  return x;
+
+}
+
+
 function addChecker(x, y, color) {
   const checker = new PIXI.Graphics();
   checker.beginFill(color);
@@ -22,35 +35,50 @@ function addChecker(x, y, color) {
   checker.interactive = true;
   checker.buttonMode = true;
   checker.dragging = false;
-  // TODO:          mousedown
+  // TODO:          mousedow
+  let currentDraggedChecker;
+  const validPos = [0,1,2,3,4,5,6,7];
+ 
+  // const movedPosX = e.data.global.x - tileSize / 2;
+  // const movedPosY = e.data.global.y - tileSize / 2;
+
   checker.on('mousedown', function (e) {
+    console.log(x,y);
     console.log('Picked up');
-    
-    checker.x = e.data.global.x- tileSize/2;
-    checker.y = e.data.global.y- tileSize/2;
+    checker.beginFill(light);
+  
+    checker.x = (e.data.global.x - tileSize / 2);
+    checker.y = e.data.global.y - tileSize / 2;
     checker.dragging = true;
-  });
-  // TODO:           mousemove
-  checker.on('mousemove', function (e) {
-    console.log('Dragging');
+    currentDraggedChecker = checker;
+    checker.on('mousemove', function (e) {
+      console.log('Dragging');
+      if (currentDraggedChecker === checker) {
+        checker.x = (e.data.global.x - tileSize / 2);
+        checker.y = e.data.global.y - tileSize / 2;
+        console.log(checker.x, checker.y);
+      } else {
+        console.log('not dragging');
+      }
+    });
     
-    if (checker.dragging) {
-      checker.x = e.data.global.x- tileSize/2;
-      checker.y = e.data.global.y- tileSize/2;
-      console.log(checker.x,checker.y);
-    
-    }else{
-      console.log("not dragging")
-    }
   });
-  // todo           mouseup 
+  
+
   checker.on('mouseup', function (e) {
     console.log('Moving');
+    let newPosX = [];
+    let newPosY = validPos*tileSize;
+    // validPos.forEach(item => newPosX = validPos[item]);
     
-    checker.x = e.data.global.x- tileSize/2;
-    checker.y = e.data.global.y- tileSize/2;
+    checker.x = (x+1)*tileSize;
+    checker.y = (y+1)*tileSize;
     checker.dragging = false;
+    currentDraggedChecker = undefined;
+    
   });
+  
+  
    app.stage.addChild(checker);
   
 }
@@ -67,7 +95,8 @@ for (let i = 0; i < 8; i++) {
     tile.endFill();
     tile.x = i * tileSize;
     tile.y = j * tileSize;
-
+    tile.interactive = true;
+    tile.buttonMode = true;
     app.stage.addChild(tile);
 
   }
@@ -77,7 +106,7 @@ function addToBoard(){
     gameState[i] = [];
     for (let j = 0; j < 8; j++) {
       if ((i + j) % 2 === 0 && (j <= 2 || j >= 5)) {
-        gameState[i][j] = (j <= 2) ? 0x43235f : 0x873f30;
+        gameState[i][j] = (j <= 2) ? color1 : color2;
         addChecker(i, j, gameState[i][j]);
       } else {
         gameState[i][j] = null;
