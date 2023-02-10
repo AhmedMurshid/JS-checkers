@@ -90,7 +90,7 @@ for (let i = 0; i < 8; i++) {
       tile.beginFill(0xffffff);
     } else {
       tile.beginFill(0x000000);
-    }
+    } 
     tile.drawRect(0, 0, tileSize, tileSize);
     tile.endFill();
     tile.x = i * tileSize;
