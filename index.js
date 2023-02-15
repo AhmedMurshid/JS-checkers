@@ -1,157 +1,165 @@
-const canvas = document.getElementById("myCanvas");
-const ctx = canvas.getContext("2d");
-//const ctx2 = canvas.getContext("2d");
 
-let x = 20;
-let y = 20;
-let width = 150;
-let height = 100;
-let speed = 5;
 
-// function moveBox() {
-//     ctx.clearRect(0, 0, canvas.width, canvas.height);
-//     x += speed;
-//     ctx.beginPath();
-//     ctx.rect(x, y, width, height);
-//     ctx.fillStyle = "red";
-//     ctx.fill();
-//     ctx.closePath();
-// }
+const app = new PIXI.Application({
+    width: 900,
+    height: 900,
+  });
+  document.body.appendChild(app.view);
+  
+//   import board from './test.js';
 
-// setInterval(moveBox, 6);
 
-ctx.fillStyle = 'green';
-//ctx.fillRect(210, 100, 100, 100);
+  const gameState = [];
+  let selectedChecker = null;
+  const tileSize = 110;
+  const circleSize = tileSize/2;
+  let alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+  const color1 = 0xff0000;
+  const color2 = 0x00e5ff;
+  const light = 0xfbff00;
+  
+  let moved;
+  
+  function validPos(x,y){
+    //if e.data.global.x - tileSize / 2 ==
+    x = x+1 || x-1;
+  
+    return x;
+  }
 
-//ctx.fillStyle = 'red';
-function board(){
-    let x = 10;
-    let y = 10;
-    for (let i = 1; i<=64; i++){
-        ctx.fillRect(x, y, 100, 100);
-        x = x + 110;
-        if(i % 8 === 0 && i != 0){
-            y = y + 110;
-            x = 10;
-        }
+  function checkCheckerColor(checker, color) {
+    if (checker.tint === color) {
+      return true;
+    } else {
+      return false;
     }
-}
-board();
-canvas.addEventListener('click', function(event) {
-    let rect = canvas.getBoundingClientRect();
-    let x = event.clientX - rect.left;
-    let y = event.clientY - rect.top;
-    let color1 = rect.fillStyle;
+  }
+  
+  
+  function addChecker(x, y, color) {
+    const checker = new PIXI.Graphics();
+    checker.beginFill(color);
+    if(checker.tint == color2){
+      checker.beginFill(color1);
 
-    // Determine which rectangle was clicked
-    let rectX = Math.floor(x / 110);
-    let rectY = Math.floor(y / 110);
-    let rectIndex = rectY * 8 + rectX;
-
-    console.log("Rectangle " + rectIndex + " was clicked!");
-
+    }
+    checker.drawCircle(circleSize, circleSize, circleSize);
+    checker.endFill();
+    checker.x = x * tileSize;
+    checker.y = y * tileSize;
+    checker.interactive = true;
+    checker.buttonMode = true;
+    checker.dragging = false;
+    // TODO:  mousedow
+    let currentDraggedChecker;
+    const validPos = [0,1,2,3,4,5,6,7];
+   
+    // const movedPosX = e.data.global.x - tileSize / 2;
+    // const movedPosY = e.data.global.y - tileSize / 2;
+  
+    checker.on('mousedown', function (e) {
+      console.log(x,y);
+      console.log('Picked up');
+      checker.beginFill(light);
     
+      checker.x = (e.data.global.x - tileSize / 2);
+      checker.y = e.data.global.y - tileSize / 2;
+      checker.dragging = true;
+      currentDraggedChecker = checker;
+      checker.on('mousemove', function (e) {
+        console.log('Dragging');
+        if (currentDraggedChecker === checker) {
+          checker.x = (e.data.global.x - tileSize / 2);
+          checker.y = e.data.global.y - tileSize / 2;
+          console.log(checker.x, checker.y);
+        } else {
+          console.log('not dragging');
+        }
+      });
+      
+    });
     
-    const clicked1 = document.createElement("h1");
-    clicked1.innerHTML = `${"Rectangle " + rectIndex + " was clicked!" + rectX +""+rectY}`;
-    document.body.appendChild(clicked1);
-    // clicked1.style.color = "black";
-    // clicked1.style.textAlign = "left";
-    // clicked1.style.marginTop = "50px";
-    // clicked1.style.fontSize = "30px";
-    //clicked1.style.float = "left";
-    if(clicked1 > 1){
-        clicked1.remove();
-    }
-
-});
-
-function addCheckerCircles() {
+  
+    checker.on('mouseup', function (e) {
+      console.log('Moving');
+      let newPosX = [];
+      let newPosY = validPos*tileSize;
+      // validPos.forEach(item => newPosX = validPos[item]);
+      if (checkCheckerColor(checker, color1)) {
+        console.log("The checker has the color you're looking for.");
+        checker.x = (x+1)*tileSize;
+        checker.y = (y+1)*tileSize;
+      } else {
+        console.log("The checker does not have the color you're looking for.");
+      }
+      checker.dragging = false;
+      currentDraggedChecker = undefined;
+    });
+     app.stage.addChild(checker);
+  }
+  function board(){
     for (let i = 0; i < 8; i++) {
-        for (let j = 0; j < 8; j++) {
-            // if(j == 3 || j == 4){
-            //     j == 5;
-            // }
-            if (j<=2 && (i + j) % 2 != 0) {
-                ctx.beginPath();
-                let x = 10 + 110 * i + 50;
-                let y = 10 + 110 * j + 50;
-                ctx.arc(x, y, 40, 0, 2 * Math.PI);
-                ctx.fillStyle = 'black';
-                ctx.fill();
-            }
-            if(j >= 5 && (i + j) % 2 != 0){
-                ctx.beginPath();
-                let x = 10 + 110 * i + 50;
-                let y = 10 + 110 * j + 50;
-                ctx.arc(x, y, 40, 0, 2 * Math.PI);
-                ctx.fillStyle = 'white';
-                ctx.fill();
-            }
-        }
+      for (let j = 0; j < 8; j++) {
+        const tile = new PIXI.Graphics();
+        if ((i + j) % 2 === 0) {
+          tile.beginFill(0xffffff);
+        } else {
+          tile.beginFill(0x000000);
+        } 
+        tile.drawRect(0, 0, tileSize, tileSize);
+        tile.endFill();
+        tile.x = i * tileSize;
+        tile.y = j * tileSize;
+        tile.interactive = true;
+        tile.buttonMode = true;
+        app.stage.addChild(tile);
+  
+      }
     }
-}
-addCheckerCircles();
-// function addCheckerCircles1() {
-//     for (let i = 0; i < 8; i++) {
-//         for (let j = 0; j < 3; j++) {
-//             if ((i + j) % 2 === 0) {
-//                 ctx.beginPath();
-//                 let x = 10 + 110 * i + 50;
-//                 let y = 560 + 110 * j + 50;
-//                 ctx.arc(x, y, 40, 0, 2 * Math.PI);
-//                 ctx.fillStyle = 'white';
-//                 ctx.fill();
-//             }
-//         }
-//     }
-// }
-// addCheckerCircles1();
-let selectedCircle;
-canvas.addEventListener('click', function(event) {
-    let rect = canvas.getBoundingClientRect();
-    let x = event.clientX - rect.left;
-    let y = event.clientY - rect.top;
-    let rectX = Math.floor(x / 110);
-    let rectY = Math.floor(y / 110);
-    let rectIndex = rectY * 8 + rectX;
-      const pixel = ctx.getImageData(mousePos.x, mousePos.y, 1, 1).data;
+  }
+  board()
+// board(app,tileSize);
 
-  // create rgb color for that pixel
-  const color = `rgb(${pixel[0]},${pixel[1]},${pixel[2]})`;
-
-    // Determine if a circle was clicked
+  function addToBoard(){
     for (let i = 0; i < 8; i++) {
-        for (let j = 0; j < 8; j++) {
-            if ((i + j) % 2 != 0) {
-                let circleX = 10 + 110 * i + 50;
-                let circleY = 10 + 110 * j + 50;
-                let distance = Math.sqrt((x - circleX) ** 2 + (y - circleY) ** 2);
-                if (distance <= 40) {
-                    if (selectedCircle) {
-                        const clicked1 = document.createElement("h1");
-                        clicked1.innerHTML = `${"black"+" was clicked!" + rectX +","+rectY}`;
-                        document.body.appendChild(clicked1);
-                        // ctx.beginPath();
-                        // ctx.arc(circleX, circleY, 40, 0, 2 * Math.PI);
-                        // ctx.fillStyle = 'black';
-                        // ctx.fill();
-
-                        selectedCircle = null;
-                    } else {
-                        const clicked1 = document.createElement("h1");
-                        clicked1.innerHTML = `${"white"+" was clicked!" + rectX +","+rectY}`;
-                        document.body.appendChild(clicked1);
-                        // ctx.beginPath();
-                        // ctx.arc(circleX, circleY, 40, 0, 2 * Math.PI);
-                        // ctx.fillStyle = 'white';
-                        // ctx.fill();
-                        selectedCircle = { x: circleX, y: circleY };
-                    }
-                }
-            }
+      gameState[i] = [];
+      for (let j = 0; j < 8; j++) {
+        if ((i + j) % 2 === 0 && (j <= 2 || j >= 5)) {
+          gameState[i][j] = (j <= 2) ? color1 : color2;
+          addChecker(i, j, gameState[i][j]);
+        } else {
+          gameState[i][j] = null;
         }
+      }
     }
-});
-
-
+    const newDiv = document.createElement("div");
+  
+    const newContent = document.createTextNode("addToBoard");
+  
+    newDiv.appendChild(newContent);
+  
+    const currentDiv = document.getElementById("div1");
+    document.body.insertBefore(newDiv, currentDiv);
+  
+  }
+  addToBoard();
+  
+  
+  // addChecker(0,0,0xff0);
+  // for(let x = 0; x<=7; x++){
+  //   for(let y = 0; y<=2; y++){
+  //     if((x+y)%2 === 0){
+  //     addChecker(x,y,0x43235f)
+  //     }
+  //   }
+  // }
+  // for(let x = 0; x<=7; x++){
+  //   for(let y = 5; y<=7; y++){
+  //     if((x+y)%2 === 0){
+  //     addChecker(x,y,0x873f30)
+  //     }
+  //   }
+  // }
+  
+  
+  
