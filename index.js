@@ -16,8 +16,17 @@ const light = 0xfbff00;
 
 let moved;
 
-function getNextValidPosX(x) {
-  return x + 1 || x - 1;
+// function currentPlace(checker) {
+//   const lowerBound = 50;
+//   const values = Array.from(new Array(200), (x, i) => i + lowerBound);
+//   for (const x of values) {
+//     if (checker.x >= x - 20 && checker.x <= x + 20) {
+//       return x;
+//     }
+//   }
+// }
+function currentPlace(n) {
+  return n;
 }
 
 function isCheckerOfColor(checker, color) {
@@ -31,6 +40,7 @@ function createChecker(x, y, color) {
     checker.beginFill(color1);
   }
   checker.drawCircle(circleSize, circleSize, circleSize);
+  checker.tint = color;
   checker.endFill();
   checker.x = x * tileSize;
   checker.y = y * tileSize;
@@ -48,35 +58,39 @@ function createChecker(x, y, color) {
     checker.y = e.data.global.y - tileSize / 2;
     checker.dragging = true;
     currentDraggedChecker = checker;
-    checker.on('mousemove', function (e) {
-      if (currentDraggedChecker === checker) {
-        checker.x = e.data.global.x - tileSize / 2;
-        checker.y = e.data.global.y - tileSize / 2;
-        console.log('Dragging at', checker.x, checker.y);
-      } else {
-        console.log('Not dragging');
-      }
-    });
   });
-
-  checker.on('mouseup', function (e) {
-    const newPosX = getNextValidPosX(x);
-    const newPosY = validPosX * tileSize;
-
-    if (isCheckerOfColor(checker, color1)) {
-      console.log("The checker has the color you're looking for.", color1);
-      checker.x = newPosX * tileSize;
-      checker.y = (y + 1) * tileSize;
-      console.log('Put down', checker.x, checker.y);
+  checker.on('mousemove', function (e) {
+    if (currentDraggedChecker === checker) {
+      checker.x = e.data.global.x - tileSize / 2;
+      checker.y = e.data.global.y - tileSize / 2;
+      console.log('Dragging at', checker.x, checker.y);
     } else {
-      console.log("The checker does not have the color you're looking for.");
+      console.log('Not dragging');
+      checker.on('mouseup', function (e) {
+        movements1(checker,x,y);
+        checker.dragging = false;
+        currentDraggedChecker = undefined;
+      });
     }
-
-    checker.dragging = false;
-    currentDraggedChecker = undefined;
   });
+
+  
 
   app.stage.addChild(checker);
+}
+function movements1(checker,x,y){
+  // const newPosX = currentPlace(x);
+  console.log("movement function active");
+  if (isCheckerOfColor(checker, color1) || isCheckerOfColor(checker, color2)) {
+    console.log("The checker has the color you're looking for.", color1);
+    console.log(x, "x place");
+    checker.x = currentPlace(x) * tileSize;
+    checker.y = currentPlace(y) * tileSize;
+    console.log('Put down', checker.x, checker.y);
+    console.log(currentPlace(x), "something is wrong");
+  } else {
+    console.log("The checker does not have the color you're looking for.", color1,"",checker.tint);
+  }
 }
 
 function createBoard() {
